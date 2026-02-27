@@ -2,8 +2,10 @@ package com.example.impresionetiquetas
 
 import android.os.Bundle
 import android.view.KeyEvent
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -18,8 +20,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etCantidad: EditText
     private lateinit var btnImprimir: Button
     private lateinit var tvResultado: TextView
+    private lateinit var spImpresora: Spinner
 
-    private val urlApi = "http://172.16.4.202:8080/api/print/zebra/item"
+    private val baseUrl = "http://172.16.4.202:8080/api/print"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,19 +32,25 @@ class MainActivity : AppCompatActivity() {
         etCantidad = findViewById(R.id.etCantidad)
         btnImprimir = findViewById(R.id.btnImprimir)
         tvResultado = findViewById(R.id.tvResultado)
+        spImpresora = findViewById(R.id.spImpresora)
+
+        // Opciones de impresora
+        val impresoras = arrayOf("Zebra", "Datamax")
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item, impresoras
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spImpresora.adapter = adapter
 
         btnImprimir.setOnClickListener {
             imprimirEtiqueta()
         }
 
-        //  Foco inicial en código
         etCodigo.requestFocus()
 
-        //  Cuando el scanner presiona ENTER
         etCodigo.setOnEditorActionListener { _, _, event ->
-
             if (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER) {
-
                 procesarCodigoEscaneado()
                 true
             } else {
@@ -50,25 +59,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //  Procesa el código escaneado
     private fun procesarCodigoEscaneado() {
 
         val codigoLimpio = etCodigo.text.toString()
             .trim()
-            .replace("\\s+".toRegex(), "") // elimina espacios, saltos, tabs
+            .replace("\\s+".toRegex(), "")
 
         if (codigoLimpio.isEmpty()) return
 
-        // Mostrar código limpio
         etCodigo.setText(codigoLimpio)
-
-        //  Cantidad por defecto = 1
         etCantidad.setText("1")
-
-        //  Mover foco a cantidad
         etCantidad.requestFocus()
-
-        // Opcional: seleccionar el 1 para reemplazar rápido
         etCantidad.selectAll()
     }
 
@@ -84,6 +85,9 @@ class MainActivity : AppCompatActivity() {
             tvResultado.text = "Ingrese código y cantidad"
             return
         }
+
+        val impresoraSeleccionada = spImpresora.selectedItem.toString().lowercase()
+        val urlApi = "$baseUrl/$impresoraSeleccionada/item"
 
         Thread {
             try {
@@ -109,13 +113,10 @@ class MainActivity : AppCompatActivity() {
                 conn.inputStream.bufferedReader().readText()
 
                 runOnUiThread {
-                    tvResultado.text = "Impresión enviada ✔"
+                    tvResultado.text = "Impresión enviada a $impresoraSeleccionada ✔"
 
-                    //  Limpiar campos para siguiente escaneo
                     etCodigo.text.clear()
                     etCantidad.text.clear()
-
-                    //  Volver foco a código
                     etCodigo.requestFocus()
                 }
 
