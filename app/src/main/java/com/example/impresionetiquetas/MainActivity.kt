@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         spImpresora = findViewById(R.id.spImpresora)
 
         // Opciones de impresora
-        val impresoras = arrayOf("Zebra", "Datamax")
+        val impresoras = arrayOf("Zebra", "Datamax", "Sewoo")
         val adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item, impresoras
@@ -86,8 +86,17 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val impresoraSeleccionada = spImpresora.selectedItem.toString().lowercase()
-        val urlApi = "$baseUrl/$impresoraSeleccionada/item"
+        val impresoraSeleccionada = spImpresora.selectedItem.toString()
+
+        val endpoint = when (impresoraSeleccionada) {
+            "Zebra" -> "zebra"
+            "Datamax" -> "datamax"
+            "Sewoo" -> "sewoo"
+            else -> "zebra"
+        }
+
+        val urlApi = "$baseUrl/$endpoint/item"
+
 
         Thread {
             try {
