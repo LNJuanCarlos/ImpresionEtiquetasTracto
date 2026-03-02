@@ -1,5 +1,6 @@
 package com.example.impresionetiquetas
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.widget.ArrayAdapter
@@ -11,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.impresionetiquetas.Activity.LoginActivity
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -22,7 +24,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvResultado: TextView
     private lateinit var spImpresora: Spinner
 
-    private val baseUrl = "http://172.16.4.202:8080/api/print"
+    private lateinit var btnLogout: Button
+
+    private lateinit var tvUsuario: TextView
+
+    private lateinit var session: SessionManager
+
+        private val baseUrl = "http://172.16.4.202:8080/api/print"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +41,19 @@ class MainActivity : AppCompatActivity() {
         btnImprimir = findViewById(R.id.btnImprimir)
         tvResultado = findViewById(R.id.tvResultado)
         spImpresora = findViewById(R.id.spImpresora)
+        btnLogout = findViewById(R.id.btnLogout)
+        tvUsuario = findViewById(R.id.tvUsuario)
+        session = SessionManager(this)
+
+        val usuario = session.getUser()
+
+        tvUsuario.text = "Usuario: $usuario"
+
+        if (!session.isLogged()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
 
         // Opciones de impresora
         val impresoras = arrayOf("Zebra", "Datamax", "Sewoo")
@@ -47,6 +68,10 @@ class MainActivity : AppCompatActivity() {
             imprimirEtiqueta()
         }
 
+        btnLogout.setOnClickListener {
+            cerrarSesion()
+        }
+
         etCodigo.requestFocus()
 
         etCodigo.setOnEditorActionListener { _, _, event ->
@@ -57,6 +82,20 @@ class MainActivity : AppCompatActivity() {
                 false
             }
         }
+    }
+
+    private fun cerrarSesion() {
+
+        // borrar datos de sesión
+        session.logout()
+
+        // volver al login limpiando historial
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags =
+            Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+        startActivity(intent)
     }
 
     private fun procesarCodigoEscaneado() {
@@ -101,10 +140,13 @@ class MainActivity : AppCompatActivity() {
         Thread {
             try {
 
+                val usuario = session.getUser()
+
                 val json = """
                 {
-                    "item":"$codigo",
-                    "cantidad":$cantidad
+                "item":"$codigo",
+                "cantidad":$cantidad,
+                "usuario":"$usuario"
                 }
                 """.trimIndent()
 
@@ -119,7 +161,13 @@ class MainActivity : AppCompatActivity() {
                     it.write(json.toByteArray())
                 }
 
-                conn.inputStream.bufferedReader().readText()
+                val responseCode = conn.responseCode
+
+                val response = if (responseCode in 200..299) {
+                    conn.inputStream.bufferedReader().readText()
+                } else {
+                    conn.errorStream.bufferedReader().readText()
+                }
 
                 runOnUiThread {
                     tvResultado.text = "Impresión enviada a $impresoraSeleccionada ✔"

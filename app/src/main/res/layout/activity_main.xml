@@ -7,6 +7,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/tvUsuario"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Usuario:"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="#F5F5F5"
+        android:gravity="end"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="10dp"
+        android:textColor="#333333"/>
+
     <EditText
         android:id="@+id/etCodigo"
         android:hint="Escanear código"
@@ -44,5 +58,15 @@
         android:layout_marginTop="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cerrar sesión"
+        android:textSize="18sp"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="#B00020"
+        android:textColor="@android:color/white"/>
 
 </LinearLayout>
