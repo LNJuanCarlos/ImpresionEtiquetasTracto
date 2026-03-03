@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.impresionetiquetas.MainActivity
 import com.example.impresionetiquetas.R
@@ -17,7 +18,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var etUsuario: EditText
     private lateinit var etPassword: EditText
     private lateinit var btnLogin: Button
-    private lateinit var tvEstado: TextView
+
 
     private val urlLogin =
         "http://172.16.4.202:8080/api/authentication/etiquetas/login"
@@ -45,40 +46,76 @@ class LoginActivity : AppCompatActivity() {
         val usuario = etUsuario.text.toString().trim()
         val password = etPassword.text.toString().trim()
 
+        if (usuario.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Ingrese usuario y contraseña", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        btnLogin.isEnabled = false
+
         Thread {
 
             try {
 
                 val json = """
-                {
-                    "usuario":"$usuario",
-                    "password":"$password"
-                }
-                """.trimIndent()
+            {
+                "usuario":"$usuario",
+                "password":"$password"
+            }
+            """.trimIndent()
 
                 val url = URL(urlLogin)
                 val conn = url.openConnection() as HttpURLConnection
 
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json")
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
                 conn.doOutput = true
 
                 conn.outputStream.use {
                     it.write(json.toByteArray())
                 }
 
-                val response = conn.inputStream.bufferedReader().readText()
+                val responseCode = conn.responseCode
 
-                //  guardar sesión
-                SessionManager(this).saveUser(usuario)
+                val response = if (responseCode in 200..299) {
+                    conn.inputStream.bufferedReader().readText()
+                } else {
+                    conn.errorStream?.bufferedReader()?.readText()
+                }
 
                 runOnUiThread {
-                    abrirMain()
+
+                    btnLogin.isEnabled = true
+
+                    if (responseCode in 200..299) {
+
+                        //  Login correcto
+                        SessionManager(this).saveUser(usuario)
+                        abrirMain()
+
+                    } else {
+
+                        //  Login incorrecto
+                        Toast.makeText(
+                            this,
+                            "Usuario o contraseña incorrectos",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
 
             } catch (e: Exception) {
+
                 runOnUiThread {
-                    tvEstado.text = "Login incorrecto"
+                    btnLogin.isEnabled = true
+
+                    Toast.makeText(
+                        this,
+                        "Error de conexión con el servidor",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
 
