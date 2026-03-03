@@ -7,7 +7,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.impresionetiquetas.MainActivity
+import com.example.impresionetiquetas.Activity.MainActivity
 import com.example.impresionetiquetas.R
 import com.example.impresionetiquetas.SessionManager
 import java.net.HttpURLConnection
@@ -18,7 +18,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var etUsuario: EditText
     private lateinit var etPassword: EditText
     private lateinit var btnLogin: Button
-
 
     private val urlLogin =
         "http://172.16.4.202:8080/api/authentication/etiquetas/login"

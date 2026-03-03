@@ -1,24 +1,22 @@
-package com.example.impresionetiquetas
+package com.example.impresionetiquetas.Activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.Spinner
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.impresionetiquetas.Activity.LoginActivity
-import java.net.HttpURLConnection
-import java.net.URL
+import com.example.impresionetiquetas.Objects.RetrofitClient
+import com.example.impresionetiquetas.Request.PrintRequest
+import com.example.impresionetiquetas.R
+import com.example.impresionetiquetas.SessionManager
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,11 +26,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnLogout: Button
     private lateinit var tvUsuario: TextView
     private lateinit var session: SessionManager
+    private lateinit var usuario: String
     private lateinit var layoutZebra: LinearLayout
     private lateinit var layoutDatamax: LinearLayout
     private lateinit var layoutSewoo: LinearLayout
 
-        private val baseUrl = "http://172.16.4.202:8080/api/print"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,8 +47,9 @@ class MainActivity : AppCompatActivity() {
         layoutDatamax = findViewById(R.id.layoutDatamax)
         layoutSewoo = findViewById(R.id.layoutSewoo)
         session = SessionManager(this)
+        usuario = session.getUser().toString()
 
-        val usuario = session.getUser()
+
 
         tvUsuario.text = "Usuario: $usuario"
 
@@ -61,15 +60,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         efectoPresion(layoutZebra) {
-            imprimirEtiqueta("zebra")
+            imprimirEtiqueta("zebra", usuario)
         }
 
         efectoPresion(layoutDatamax) {
-            imprimirEtiqueta("datamax")
+            imprimirEtiqueta("datamax", usuario)
         }
 
         efectoPresion(layoutSewoo) {
-            imprimirEtiqueta("sewoo")
+            imprimirEtiqueta("sewoo", usuario)
         }
 
         btnLogout.setOnClickListener {
@@ -142,7 +141,7 @@ class MainActivity : AppCompatActivity() {
         etCantidad.selectAll()
     }
 
-    private fun imprimirEtiqueta(endpoint: String) {
+    private fun imprimirEtiqueta(endpoint: String, usuario: String) {
 
         val codigo = etCodigo.text.toString().trim()
         val cantidad = etCantidad.text.toString().trim()
@@ -152,56 +151,42 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val urlApi = "$baseUrl/$endpoint/item"
+        val request = PrintRequest(
+            item = codigo,
+            cantidad = cantidad.toInt(),
+            usuario = usuario
+        )
 
-        Thread {
-            try {
+        RetrofitClient.api.imprimir(endpoint, request)
+            .enqueue(object : Callback<Void> {
 
-                val usuario = session.getUser()
+                override fun onResponse(
+                    call: Call<Void>,
+                    response: Response<Void>
+                ) {
 
-                val json = """
-            {
-                "item":"$codigo",
-                "cantidad":$cantidad,
-                "usuario":"$usuario"
-            }
-            """.trimIndent()
+                    runOnUiThread {
 
-                val url = URL(urlApi)
-                val conn = url.openConnection() as HttpURLConnection
+                        if (response.isSuccessful) {
+                            tvResultado.text = "Impresión enviada ✔"
 
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.connectTimeout = 5000
-                conn.readTimeout = 5000
-                conn.doOutput = true
+                            etCodigo.text.clear()
+                            etCantidad.text.clear()
+                            etCodigo.requestFocus()
 
-                conn.outputStream.use {
-                    it.write(json.toByteArray())
-                    it.flush()
+                        } else {
+                            tvResultado.text =
+                                "Error servidor: ${response.code()}"
+                        }
+                    }
                 }
 
-                //  IMPORTANTE
-                val responseCode = conn.responseCode
+                override fun onFailure(call: Call<Void>, t: Throwable) {
 
-                val response = if (responseCode in 200..299) {
-                    conn.inputStream.bufferedReader().readText()
-                } else {
-                    conn.errorStream?.bufferedReader()?.readText()
+                    runOnUiThread {
+                        tvResultado.text = "Error conexión: ${t.message}"
+                    }
                 }
-
-                runOnUiThread {
-                    tvResultado.text = "Impresión enviada ✔"
-                    etCodigo.text.clear()
-                    etCantidad.text.clear()
-                    etCodigo.requestFocus()
-                }
-
-            } catch (e: Exception) {
-                runOnUiThread {
-                    tvResultado.text = "Error: ${e.message}"
-                }
-            }
-        }.start()
+            })
     }
 }
