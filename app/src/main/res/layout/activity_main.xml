@@ -5,7 +5,8 @@
     android:padding="24dp"
     android:gravity="center_horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:descendantFocusability="afterDescendants">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -40,14 +41,42 @@
 
     </LinearLayout>
 
-
-
-    <EditText
-        android:id="@+id/etCodigo"
-        android:hint="Escanear código"
-        android:textSize="22sp"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:background="@drawable/bg_scan_box">
+
+        <!-- FILA CODIGO -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCodigo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Escanear código">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCodigo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- DESCRIPCION -->
+        <TextView
+            android:id="@+id/tvDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="14sp"
+            android:textColor="#666"
+            android:paddingTop="4dp"/>
+
+    </LinearLayout>
 
     <EditText
         android:id="@+id/etCantidad"
