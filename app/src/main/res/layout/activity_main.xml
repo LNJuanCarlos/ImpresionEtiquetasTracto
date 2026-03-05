@@ -1,194 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center_horizontal"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:descendantFocusability="afterDescendants">
+    android:fillViewport="true">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <!-- USUARIO -->
-        <TextView
-            android:id="@+id/tvUsuario"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Usuario:"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:background="#F5F5F5"
-            android:gravity="start|center_vertical"
-            android:padding="12dp"
-            android:textColor="#333333"/>
-
-        <!-- BOTON LOGOUT -->
-        <Button
-            android:id="@+id/btnLogout"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:text="Cerrar sesión"
-            android:textSize="14sp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp"
-        android:background="@drawable/bg_scan_box">
+        android:padding="20dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="afterDescendants">
 
-        <!-- FILA CODIGO -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilCodigo"
+
+        <!-- HEADER USUARIO -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Escanear código">
+            android:padding="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etCodigo"
+            <TextView
+                android:id="@+id/tvUsuario"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Usuario:"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="#F5F5F5"
+                android:gravity="start|center_vertical"
+                android:padding="12dp"
+                android:textColor="#333333"/>
+
+            <Button
+                android:id="@+id/btnLogout"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:text="Cerrar sesión"
+                android:textSize="14sp"/>
+
+        </LinearLayout>
+
+
+        <!-- TARJETA PRODUCTO -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:imeOptions="actionDone"
-                android:inputType="text"
-                />
+                android:orientation="vertical"
+                android:padding="14dp">
 
-        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- DESCRIPCION -->
-        <TextView
-            android:id="@+id/tvDescripcion"
+                <!-- CODIGO -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCodigo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Escanear código">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCodigo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:imeOptions="actionDone"
+                        android:inputType="text"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <!-- DESCRIPCION -->
+                <TextView
+                    android:id="@+id/tvDescripcion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#222"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"/>
+
+
+                <!-- TITULO ALMACEN -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Almacén"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginTop="6dp"/>
+
+
+                <!-- SPINNER -->
+                <Spinner
+                    android:id="@+id/spAlmacen"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"/>
+
+
+                <!-- ENCABEZADO STOCK -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="#EEEEEE"
+                    android:padding="8dp"
+                    android:textSize="13sp"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="UBICACIÓN"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="ALMACEN"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:layout_height="wrap_content"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:text="STOCK"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:layout_height="wrap_content"/>
+
+                </LinearLayout>
+
+
+                <!-- LISTA STOCK -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvStock"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="4dp"/>
+
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <!-- CANTIDAD -->
+        <EditText
+            android:id="@+id/etCantidad"
+            android:hint="Cantidad"
+            android:inputType="number"
+            android:textSize="22sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="14sp"
-            android:textColor="#666"
-            android:paddingTop="4dp"/>
+            android:layout_marginTop="16dp"/>
+
+
+        <!-- IMPRESORAS -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp">
+
+
+            <!-- ZEBRA -->
+            <LinearLayout
+                android:id="@+id/layoutZebra"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="5dp">
+
+                <ImageView
+                    android:id="@+id/imgZebra"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_zebra"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Zebra"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginTop="6dp"/>
+
+            </LinearLayout>
+
+
+            <!-- DATAMAX -->
+            <LinearLayout
+                android:id="@+id/layoutDatamax"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginStart="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="5dp">
+
+                <ImageView
+                    android:id="@+id/imgDatamax"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_datamax"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Datamax"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginTop="6dp"/>
+
+            </LinearLayout>
+
+
+            <!-- SEWOO -->
+            <LinearLayout
+                android:id="@+id/layoutSewoo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginStart="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="5dp">
+
+                <ImageView
+                    android:id="@+id/imgSewoo"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_sewoo"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sewoo"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginTop="6dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <!-- MENSAJE RESULTADO -->
+        <TextView
+            android:id="@+id/tvResultado"
+            android:textSize="18sp"
+            android:textColor="#006400"
+            android:layout_marginTop="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/etCantidad"
-        android:hint="Cantidad"
-        android:inputType="number"
-        android:textSize="22sp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="24dp">
-
-        <!-- ZEBRA -->
-        <LinearLayout
-            android:id="@+id/layoutZebra"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="5dp">
-
-            <ImageView
-                android:id="@+id/imgZebra"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_zebra"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Zebra"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:layout_marginTop="6dp"/>
-        </LinearLayout>
-
-        <!-- DATAMAX -->
-        <LinearLayout
-            android:id="@+id/layoutDatamax"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginStart="24dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="5dp">
-
-            <ImageView
-                android:id="@+id/imgDatamax"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_datamax"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Datamax"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:layout_marginTop="6dp"/>
-        </LinearLayout>
-
-        <!-- SEWOO -->
-        <LinearLayout
-            android:id="@+id/layoutSewoo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginStart="24dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="5dp">
-
-            <ImageView
-                android:id="@+id/imgSewoo"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_sewoo"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sewoo"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:layout_marginTop="6dp"/>
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvResultado"
-        android:textSize="18sp"
-        android:textColor="#006400"
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-
-</LinearLayout>
+</ScrollView>

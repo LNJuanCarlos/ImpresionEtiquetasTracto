@@ -29,6 +29,14 @@ import android.media.ToneGenerator
 import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.impresionetiquetas.Adapters.StockAdapter
+import com.example.impresionetiquetas.model.ProductoStockResponse
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,6 +52,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutDatamax: LinearLayout
     private lateinit var layoutSewoo: LinearLayout
     private lateinit var tilCodigo: TextInputLayout
+    private lateinit var rvStock: RecyclerView
+
+    private lateinit var spAlmacen: Spinner
+
+    private var listaStockCompleta: List<ProductoStockResponse> = emptyList()
 
     private var productoActual: ProductoResponse? = null
 
@@ -62,6 +75,17 @@ class MainActivity : AppCompatActivity() {
         layoutDatamax = findViewById(R.id.layoutDatamax)
         layoutSewoo = findViewById(R.id.layoutSewoo)
         tilCodigo = findViewById(R.id.tilCodigo)
+        rvStock = findViewById(R.id.rvStock)
+        spAlmacen = findViewById(R.id.spAlmacen)
+        rvStock.layoutManager = LinearLayoutManager(this)
+        val divider = DividerItemDecoration(
+            rvStock.context,
+            DividerItemDecoration.VERTICAL
+        )
+
+        rvStock.addItemDecoration(divider)
+
+
         session = SessionManager(this)
         usuario = session.getUser().toString()
 
@@ -114,6 +138,71 @@ class MainActivity : AppCompatActivity() {
 
         actualizarEstadoImpresoras(false)
 
+    }
+
+    private fun cargarStock(item: String) {
+
+        RetrofitClient.productoApi.obtenerStock(item)
+            .enqueue(object : Callback<List<ProductoStockResponse>> {
+
+                override fun onResponse(
+                    call: Call<List<ProductoStockResponse>>,
+                    response: Response<List<ProductoStockResponse>>
+                ) {
+
+                    if (response.isSuccessful) {
+
+                        listaStockCompleta = response.body() ?: emptyList()
+
+                        val almacenes = listaStockCompleta
+                            .map { it.almacen.trim() }
+                            .distinct()
+
+                        val adapterSpinner = ArrayAdapter(
+                            this@MainActivity,
+                            android.R.layout.simple_spinner_item,
+                            almacenes
+                        )
+
+                        adapterSpinner.setDropDownViewResource(
+                            android.R.layout.simple_spinner_dropdown_item
+                        )
+
+                        spAlmacen.adapter = adapterSpinner
+
+                        spAlmacen.onItemSelectedListener =
+                            object : AdapterView.OnItemSelectedListener {
+
+                                override fun onItemSelected(
+                                    parent: AdapterView<*>,
+                                    view: View?,
+                                    position: Int,
+                                    id: Long
+                                ) {
+
+                                    val almacenSeleccionado = almacenes[position]
+
+                                    val filtrado = listaStockCompleta.filter {
+                                        it.almacen.trim() == almacenSeleccionado
+                                    }
+
+                                    rvStock.adapter = StockAdapter(filtrado)
+                                }
+
+                                override fun onNothingSelected(parent: AdapterView<*>) {}
+                            }
+                    }
+                }
+
+                override fun onFailure(call: Call<List<ProductoStockResponse>>, t: Throwable) {
+
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error cargando stock",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
     }
 
     private fun actualizarEstadoImpresoras(activo: Boolean) {
@@ -192,6 +281,7 @@ class MainActivity : AppCompatActivity() {
         tvDescripcion.text = producto.descripcionLocal
 
         etCantidad.setText("1")
+        cargarStock(producto.item)
         etCantidad.requestFocus()
         etCantidad.selectAll()
 
