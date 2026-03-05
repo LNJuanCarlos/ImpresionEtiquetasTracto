@@ -14,7 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.impresionetiquetas.Objects.RetrofitClient
-import com.example.impresionetiquetas.Request.PrintRequest
+import com.example.impresionetiquetas.model.PrintRequest
 import com.example.impresionetiquetas.R
 import com.example.impresionetiquetas.SessionManager
 import com.example.impresionetiquetas.model.ProductoResponse

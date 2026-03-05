@@ -1,10 +1,8 @@
 package com.example.impresionetiquetas.Interface
 
-import com.example.impresionetiquetas.Request.PrintRequest
-import com.example.impresionetiquetas.model.ProductoResponse
+import com.example.impresionetiquetas.model.PrintRequest
 import retrofit2.Call
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 

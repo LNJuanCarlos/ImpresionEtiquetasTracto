@@ -1,4 +1,4 @@
-package com.example.impresionetiquetas.Request
+package com.example.impresionetiquetas.model
 
 data class PrintRequest(
     val item: String,
