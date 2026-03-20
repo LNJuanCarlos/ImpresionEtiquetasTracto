@@ -1,5 +1,6 @@
 package com.example.impresionetiquetas.Activity
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -36,6 +37,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.impresionetiquetas.Adapters.StockAdapter
+import com.example.impresionetiquetas.model.PrinterManager
 import com.example.impresionetiquetas.model.ProductoStockResponse
 
 class MainActivity : AppCompatActivity() {
@@ -53,8 +55,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutSewoo: LinearLayout
     private lateinit var tilCodigo: TextInputLayout
     private lateinit var rvStock: RecyclerView
-
     private lateinit var spAlmacen: Spinner
+
+    private lateinit var printerManager: PrinterManager
+
+    private var sewooSeleccionada: Int? = null
+
+    private lateinit var tvSewoo: TextView
 
     private var listaStockCompleta: List<ProductoStockResponse> = emptyList()
 
@@ -77,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         tilCodigo = findViewById(R.id.tilCodigo)
         rvStock = findViewById(R.id.rvStock)
         spAlmacen = findViewById(R.id.spAlmacen)
+        tvSewoo = findViewById(R.id.tvSewoo)
         rvStock.layoutManager = LinearLayoutManager(this)
         val divider = DividerItemDecoration(
             rvStock.context,
@@ -84,6 +92,11 @@ class MainActivity : AppCompatActivity() {
         )
 
         rvStock.addItemDecoration(divider)
+
+
+        printerManager = PrinterManager(this)
+        sewooSeleccionada = printerManager.obtenerSewoo()
+        actualizarTextoSewoo()
 
 
         session = SessionManager(this)
@@ -111,9 +124,7 @@ class MainActivity : AppCompatActivity() {
             imprimirEtiqueta("datamax", usuario)
         }
 
-        efectoPresion(layoutSewoo) {
-            imprimirEtiqueta("sewoo", usuario)
-        }
+        efectoPresionSewoo(layoutSewoo, usuario)
 
         btnLogout.setOnClickListener {
             cerrarSesion()
@@ -138,6 +149,93 @@ class MainActivity : AppCompatActivity() {
 
         actualizarEstadoImpresoras(false)
 
+    }
+
+
+    private fun actualizarTextoSewoo() {
+
+        if (sewooSeleccionada == null) {
+            tvSewoo.text = "SEWOO"
+        } else {
+            tvSewoo.text = "SEWOO ${sewooSeleccionada}"
+        }
+    }
+    private fun efectoPresionSewoo(view: View, usuario: String) {
+
+        var longPressEjecutado = false
+        val handler = Handler(Looper.getMainLooper())
+
+        val longPressRunnable = Runnable {
+            longPressEjecutado = true
+            seleccionarSewoo()
+        }
+
+        view.setOnTouchListener { v, event ->
+
+            when (event.action) {
+
+                MotionEvent.ACTION_DOWN -> {
+                    longPressEjecutado = false
+
+                    v.scaleX = 0.93f
+                    v.scaleY = 0.93f
+
+                    handler.postDelayed(longPressRunnable, 600) // 600ms long press
+                }
+
+                MotionEvent.ACTION_UP -> {
+
+                    handler.removeCallbacks(longPressRunnable)
+
+                    v.scaleX = 1f
+                    v.scaleY = 1f
+
+                    // SOLO imprime si NO fue long press
+                    if (!longPressEjecutado) {
+
+                        if (sewooSeleccionada == null) {
+                            seleccionarSewoo()
+                        } else {
+                            imprimirEtiquetaSewoo(usuario)
+                        }
+                    }
+                }
+
+                MotionEvent.ACTION_CANCEL -> {
+                    handler.removeCallbacks(longPressRunnable)
+                    v.scaleX = 1f
+                    v.scaleY = 1f
+                }
+            }
+            true
+        }
+    }
+
+    private fun seleccionarSewoo() {
+
+        val impresoras = arrayOf(
+            "SEWOO 1",
+            "SEWOO 2",
+            "SEWOO 3",
+            "SEWOO 4",
+            "SEWOO 5",
+            "SEWOO 6"
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle("Seleccionar impresora Sewoo")
+            .setItems(impresoras) { _, which ->
+
+                val numero = which + 1
+
+                sewooSeleccionada = numero
+                printerManager.guardarSewoo(numero)
+
+                actualizarTextoSewoo()
+
+                mostrarMensaje("Usando ${impresoras[which]}")
+            }
+            .show()
     }
 
     private fun cargarStock(item: String) {
@@ -264,13 +362,6 @@ class MainActivity : AppCompatActivity() {
 
         etCodigo.requestFocus()
         actualizarEstadoImpresoras(false)
-    }
-
-    private fun obtenerCodigo(): String {
-
-        val texto = etCodigo.text.toString()
-
-        return texto.split("-")[0].trim()
     }
 
     private fun mostrarProductoEscaneado(producto: ProductoResponse) {
@@ -430,6 +521,66 @@ class MainActivity : AppCompatActivity() {
                         sonidoError()
                         mostrarMensaje("Error conexión", true)
                     }
+                }
+            })
+    }
+
+    private fun imprimirEtiquetaSewoo(usuario: String) {
+
+        val numero = sewooSeleccionada
+
+        if (numero == null) {
+            seleccionarSewoo()
+            return
+        }
+
+        val producto = productoActual ?: run {
+            mostrarMensaje("Escanee un producto", true)
+            return
+        }
+
+        val cantidadTexto = etCantidad.text.toString().trim()
+
+        if (cantidadTexto.isEmpty()) {
+            mostrarMensaje("Ingrese cantidad", true)
+            return
+        }
+
+        val request = PrintRequest(
+            item = producto.item,
+            cantidad = cantidadTexto.toInt(),
+            usuario = usuario
+        )
+
+        RetrofitClient.printApi
+            .imprimirSewoo(numero, request)
+            .enqueue(object : Callback<Void> {
+
+                override fun onResponse(
+                    call: Call<Void>,
+                    response: Response<Void>
+                ) {
+
+                    runOnUiThread {
+
+                        if (response.isSuccessful) {
+                            vibrar()
+                            sonidoExito()
+                            mostrarMensaje("Impreso en SEWOO $numero ✔")
+
+                            etCantidad.requestFocus()
+                            etCantidad.selectAll()
+                        } else {
+                            sonidoError()
+                            mostrarMensaje("Error servidor", true)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    vibrar(200)
+                    sonidoError()
+                    mostrarMensaje("Error conexión", true)
                 }
             })
     }
